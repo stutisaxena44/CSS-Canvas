@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <title>Happy 2026</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+    html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at bottom, #0b0f2a, #000);
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    }
+
+    canvas {
+    position: fixed;
+    inset: 0;
+    }
+
+    .ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    }
+
+    h1 {
+    font-size: clamp(64px, 12vw, 140px);
+    font-weight: 900;
+    margin: 0;
+    color: white;
+    letter-spacing: 6px;
+    text-shadow: 0 0 40px rgba(255,255,255,0.35);
+    }
+
+    p {
+    margin-top: 12px;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: #9ad7ff;
+    }
+    </style>
+    </head>
+
+    <body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="ui">
+    <h1>2026</h1>
+    <p>NEW YEAR · NEW ENERGY</p>
+    </div>
+
+    <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    /* Fireworks system */
+    const fireworks = [];
+    const particles = [];
+
+    function random(min, max) {
+    return Math.random() * (max - min) + min;
+    }
+
+    class Firework {
+    constructor() {
+        this.x = random(0, canvas.width);
+        this.y = canvas.height;
+        this.targetY = random(canvas.height * 0.15, canvas.height * 0.45);
+        this.speed = random(7, 10);
+        this.color = `hsl(${random(0,360)}, 100%, 60%)`;
+    }
+
+    update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+        this.explode();
+        return false;
+        }
+        return true;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+
+    explode() {
+        for (let i = 0; i < 80; i++) {
+        particles.push(new Particle(this.x, this.y, this.color));
+        }
+    }
+    }
+
+    class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.angle = random(0, Math.PI * 2);
+        this.speed = random(2, 7);
+        this.friction = 0.97;
+        this.gravity = 0.06;
+        this.alpha = 1;
+        this.color = color;
+    }
+
+    update() {
+        this.speed *= this.friction;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed + this.gravity;
+        this.alpha -= 0.015;
+        return this.alpha > 0;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color.replace(")", `, ${this.alpha})`).replace("hsl", "hsla");
+        ctx.fill();
+    }
+    }
+
+    function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (Math.random() < 0.06) {
+        fireworks.push(new Firework());
+    }
+
+    for (let i = fireworks.length - 1; i >= 0; i--) {
+        fireworks[i].draw();
+        if (!fireworks[i].update()) fireworks.splice(i, 1);
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].draw();
+        if (!particles[i].update()) particles.splice(i, 1);
+    }
+
+    requestAnimationFrame(animate);
+    }
+
+    animate();
+    </script>
+
+    </body>
+    </html>
